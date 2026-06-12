@@ -1,0 +1,20 @@
+# Node.js dependencies
+node_modules/
+dist/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Python files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
