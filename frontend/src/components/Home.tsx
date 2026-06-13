@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ArrowRight, Smartphone, Activity, Shield, CloudSun, Droplets } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ArrowRight, Smartphone, Activity, Shield, CloudSun, Droplets, MapPin, ChevronDown, Thermometer, Wind, Eye } from 'lucide-react';
 
 interface HomeProps {
   onEnterWorkspace: () => void;
@@ -18,44 +18,59 @@ interface DailyForecast {
 interface WeatherInfo {
   location: string;
   region: string;
+  elevation: number;
   forecasts: DailyForecast[];
 }
 
 const mapWeatherCode = (code: number) => {
-  if (code === 0) return { label: 'Sunny', emoji: '☀️' };
-  if (code >= 1 && code <= 3) return { label: 'Partly Cloudy', emoji: '⛅' };
-  if (code >= 45 && code <= 48) return { label: 'Foggy', emoji: '🌫️' };
-  if (code >= 51 && code <= 67) return { label: 'Rainy', emoji: '🌧️' };
-  if (code >= 71 && code <= 77) return { label: 'Snowy', emoji: '❄️' };
-  if (code >= 80 && code <= 82) return { label: 'Rain Showers', emoji: '🌦️' };
-  if (code >= 85 && code <= 86) return { label: 'Snow Showers', emoji: '🌨️' };
-  if (code >= 95 && code <= 99) return { label: 'Thunderstorm', emoji: '⛈️' };
-  return { label: 'Clear', emoji: '☀️' };
+  if (code === 0) return { label: 'Clear Sky', emoji: '☀️', gradient: 'linear-gradient(135deg, #ff9500 0%, #ff5e3a 100%)' };
+  if (code >= 1 && code <= 3) return { label: 'Partly Cloudy', emoji: '⛅', gradient: 'linear-gradient(135deg, #64b5f6 0%, #42a5f5 100%)' };
+  if (code >= 45 && code <= 48) return { label: 'Foggy', emoji: '🌫️', gradient: 'linear-gradient(135deg, #90a4ae 0%, #78909c 100%)' };
+  if (code >= 51 && code <= 67) return { label: 'Rainy', emoji: '🌧️', gradient: 'linear-gradient(135deg, #5c6bc0 0%, #3949ab 100%)' };
+  if (code >= 71 && code <= 77) return { label: 'Snowy', emoji: '❄️', gradient: 'linear-gradient(135deg, #e0e0e0 0%, #bdbdbd 100%)' };
+  if (code >= 80 && code <= 82) return { label: 'Rain Showers', emoji: '🌦️', gradient: 'linear-gradient(135deg, #7986cb 0%, #5c6bc0 100%)' };
+  if (code >= 85 && code <= 86) return { label: 'Snow Showers', emoji: '🌨️', gradient: 'linear-gradient(135deg, #b0bec5 0%, #90a4ae 100%)' };
+  if (code >= 95 && code <= 99) return { label: 'Thunderstorm', emoji: '⛈️', gradient: 'linear-gradient(135deg, #7e57c2 0%, #5e35b1 100%)' };
+  return { label: 'Clear', emoji: '☀️', gradient: 'linear-gradient(135deg, #ff9500 0%, #ff5e3a 100%)' };
 };
 
 const getAgriAdvisory = (maxTemp: number, code: number, rainProb: number) => {
   if (code >= 95 && code <= 99) {
-    return 'Severe storms: Avoid seeding. Clear storm drains and protect nursery beds.';
+    return 'Severe storms expected — avoid seeding operations. Clear storm drains and protect nursery beds from wind damage.';
   }
   if ((code >= 51 && code <= 67) || rainProb > 70) {
-    return 'Rainy: Excellent moisture for planting. Avoid applying surface chemical fertilizers.';
+    return 'Rainy conditions: excellent moisture for planting. Avoid applying surface chemical fertilizers — risk of runoff.';
   }
   if (rainProb > 40) {
-    return 'Showers likely: Favorable for transplanting seedlings. Delay spraying pesticides.';
+    return 'Showers likely: favorable window for transplanting seedlings. Delay foliar pesticide spraying until dry.';
   }
   if (maxTemp > 28) {
-    return 'Hot/Dry: High evapotranspiration. Irrigate nurseries early; check soil moisture.';
+    return 'Hot & dry: high evapotranspiration rates. Irrigate nurseries early morning; mulch to conserve soil moisture.';
   }
   if (maxTemp < 18) {
-    return 'Cool: Expect slower maize root growth. Favorable for pea/legume seeding.';
+    return 'Cool temperatures: slower maize root growth expected. Favorable conditions for pea and legume seeding.';
   }
-  return 'Stable: Optimal conditions for seedbed tillage, YOLOv8 diagnostics, and seeding.';
+  return 'Stable conditions: optimal for seedbed tillage, field diagnostics, and precision seeding operations.';
 };
 
 export default function Home({ onEnterWorkspace }: HomeProps) {
   const [weatherData, setWeatherData] = useState<WeatherInfo[]>([]);
   const [weatherLoading, setWeatherLoading] = useState<boolean>(true);
-  const [selectedDayIndex, setSelectedDayIndex] = useState<number>(1); // Defaults to 1 ("Today")
+  const [selectedCity, setSelectedCity] = useState<number>(0);
+  const [selectedDayIndex, setSelectedDayIndex] = useState<number>(1);
+  const [cityListOpen, setCityListOpen] = useState<boolean>(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setCityListOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -68,14 +83,14 @@ export default function Home({ onEnterWorkspace }: HomeProps) {
         const data = await res.json();
         
         const locations = [
-          { name: 'Kigali', region: 'Central Province' },
-          { name: 'Musanze', region: 'Northern Province' },
-          { name: 'Huye', region: 'Southern Province' },
-          { name: 'Kayonza', region: 'Eastern Province' },
-          { name: 'Rubavu', region: 'Western Province' },
-          { name: 'Nyagatare', region: 'Eastern Province' },
-          { name: 'Karongi', region: 'Western Province' },
-          { name: 'Bugesera', region: 'Eastern Province' }
+          { name: 'Kigali', region: 'Central Province', elevation: 1567 },
+          { name: 'Musanze', region: 'Northern Province', elevation: 1850 },
+          { name: 'Huye', region: 'Southern Province', elevation: 1706 },
+          { name: 'Kayonza', region: 'Eastern Province', elevation: 1530 },
+          { name: 'Rubavu', region: 'Western Province', elevation: 1476 },
+          { name: 'Nyagatare', region: 'Eastern Province', elevation: 1513 },
+          { name: 'Karongi', region: 'Western Province', elevation: 1634 },
+          { name: 'Bugesera', region: 'Eastern Province', elevation: 1434 }
         ];
 
         const formatted = locations.map((loc, cityIdx) => {
@@ -89,7 +104,6 @@ export default function Home({ onEnterWorkspace }: HomeProps) {
             const code = typeof daily.weather_code?.[dayIdx] === 'number' ? daily.weather_code[dayIdx] : 0;
             const rainProb = typeof daily.precipitation_probability_max?.[dayIdx] === 'number' ? daily.precipitation_probability_max[dayIdx] : 0;
             
-            // Format Day Label
             let dayLabel = 'Today';
             if (dayIdx === 0) dayLabel = 'Yesterday';
             else if (dayIdx === 1) dayLabel = 'Today';
@@ -113,6 +127,7 @@ export default function Home({ onEnterWorkspace }: HomeProps) {
           return {
             location: loc.name,
             region: loc.region,
+            elevation: loc.elevation,
             forecasts
           };
         });
@@ -124,14 +139,14 @@ export default function Home({ onEnterWorkspace }: HomeProps) {
       } catch (err) {
         console.warn('Weather fetch failed, falling back to mock data:', err);
         const locations = [
-          { name: 'Kigali', region: 'Central Province', baseTemp: 24 },
-          { name: 'Musanze', region: 'Northern Province', baseTemp: 17 },
-          { name: 'Huye', region: 'Southern Province', baseTemp: 21 },
-          { name: 'Kayonza', region: 'Eastern Province', baseTemp: 27 },
-          { name: 'Rubavu', region: 'Western Province', baseTemp: 22 },
-          { name: 'Nyagatare', region: 'Eastern Province', baseTemp: 28 },
-          { name: 'Karongi', region: 'Western Province', baseTemp: 23 },
-          { name: 'Bugesera', region: 'Eastern Province', baseTemp: 26 }
+          { name: 'Kigali', region: 'Central Province', baseTemp: 24, elevation: 1567 },
+          { name: 'Musanze', region: 'Northern Province', baseTemp: 17, elevation: 1850 },
+          { name: 'Huye', region: 'Southern Province', baseTemp: 21, elevation: 1706 },
+          { name: 'Kayonza', region: 'Eastern Province', baseTemp: 27, elevation: 1530 },
+          { name: 'Rubavu', region: 'Western Province', baseTemp: 22, elevation: 1476 },
+          { name: 'Nyagatare', region: 'Eastern Province', baseTemp: 28, elevation: 1513 },
+          { name: 'Karongi', region: 'Western Province', baseTemp: 23, elevation: 1634 },
+          { name: 'Bugesera', region: 'Eastern Province', baseTemp: 26, elevation: 1434 }
         ];
 
         const mock = locations.map((loc) => {
@@ -166,6 +181,7 @@ export default function Home({ onEnterWorkspace }: HomeProps) {
           return {
             location: loc.name,
             region: loc.region,
+            elevation: loc.elevation,
             forecasts
           };
         });
@@ -180,6 +196,14 @@ export default function Home({ onEnterWorkspace }: HomeProps) {
     fetchWeather();
     return () => { active = false; };
   }, []);
+
+  // Derive current city + forecast
+  const currentCity = weatherData[selectedCity];
+  const activeForecast = currentCity?.forecasts[selectedDayIndex] || currentCity?.forecasts[1];
+  const condition = activeForecast ? mapWeatherCode(activeForecast.code) : null;
+
+  // Temperature gauge percentage (range 5°C – 40°C)
+  const tempPercent = activeForecast ? Math.min(100, Math.max(0, ((activeForecast.maxTemp - 5) / 35) * 100)) : 0;
 
   return (
     <div style={styles.heroContainer}>
@@ -223,93 +247,178 @@ export default function Home({ onEnterWorkspace }: HomeProps) {
         </div>
       </section>
 
-      {/* RWANDA WEATHER ADVISORY SECTION */}
-      <section className="weather-section">
-        <div className="weather-header" style={{ flexWrap: 'wrap', gap: '1rem' }}>
-          <div className="weather-title">
-            <CloudSun size={24} color="var(--accent-green)" />
-            <h2 style={{ margin: 0, fontSize: '1.45rem' }}>Rwanda Agro-Meteorological Advisory</h2>
-          </div>
-          
-          {/* Timeline tabs selector */}
-          {!weatherLoading && weatherData.length > 0 && (
-            <div style={{ display: 'flex', gap: '0.35rem', background: 'rgba(255, 255, 255, 0.02)', padding: '3px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
-              {Array.from({ length: 4 }).map((_, idx) => {
-                const label = weatherData[0]?.forecasts[idx]?.dayLabel || '';
-                return (
-                  <button
-                    key={idx}
-                    onClick={() => setSelectedDayIndex(idx)}
-                    style={{
-                      background: selectedDayIndex === idx ? 'var(--accent-green)' : 'transparent',
-                      color: selectedDayIndex === idx ? '#0b1308' : 'var(--text-muted)',
-                      border: 'none',
-                      padding: '0.4rem 0.8rem',
-                      borderRadius: '6px',
-                      fontSize: '0.8rem',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
+      {/* PREMIUM WEATHER ADVISORY SECTION */}
+      <section className="weather-premium-section">
+        {/* Section header */}
+        <div className="weather-premium-header">
+          <div className="weather-premium-title-group">
+            <div className="weather-premium-icon-ring">
+              <CloudSun size={22} color="#fff" />
             </div>
-          )}
+            <div>
+              <h2 className="weather-premium-title">Agro-Meteorological Advisory</h2>
+              <p className="weather-premium-subtitle">Rwanda · Live agricultural weather intelligence</p>
+            </div>
+          </div>
         </div>
 
         {weatherLoading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4rem' }}>
-            <div style={{
-              width: '24px',
-              height: '24px',
-              border: '2px solid rgba(103, 194, 58, 0.1)',
-              borderTopColor: 'var(--accent-green)',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite'
-            }}></div>
-            <p style={{ marginTop: '1rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Fetching live agricultural weather timelines...</p>
+          <div className="weather-premium-loading">
+            <div className="weather-premium-spinner"></div>
+            <p>Fetching live weather data across Rwanda...</p>
           </div>
-        ) : (
-          <div className="weather-grid">
-            {weatherData.map((w, idx) => {
-              const activeForecast = w.forecasts[selectedDayIndex] || w.forecasts[1];
-              const condition = mapWeatherCode(activeForecast.code);
-              return (
-                <div key={idx} className="weather-card">
-                  <div className="weather-location">
-                    <div>
-                      <h4 style={{ margin: 0, fontSize: '1.05rem' }}>{w.location}</h4>
-                      <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{w.region}</span>
-                    </div>
-                    <span className="weather-icon-emoji">{condition.emoji}</span>
-                  </div>
+        ) : currentCity && activeForecast && condition ? (
+          <div className="weather-premium-body">
+            {/* Left: Main display */}
+            <div className="weather-premium-main">
+              {/* City selector */}
+              <div className="weather-city-selector" ref={dropdownRef}>
+                <button
+                  className="weather-city-trigger"
+                  onClick={() => setCityListOpen(!cityListOpen)}
+                  id="weather-city-dropdown"
+                >
+                  <MapPin size={16} />
+                  <span className="weather-city-trigger-name">{currentCity.location}</span>
+                  <span className="weather-city-trigger-region">{currentCity.region}</span>
+                  <ChevronDown size={14} className={`weather-chevron ${cityListOpen ? 'open' : ''}`} />
+                </button>
 
-                  <div className="weather-temp-row">
-                    <span className="weather-temp">
-                      {activeForecast.maxTemp}°C <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 400 }}>/ {activeForecast.minTemp}°C</span>
-                    </span>
-                    <span style={{ fontSize: '0.8rem', color: '#fff', fontWeight: 600 }}>{condition.label}</span>
+                {cityListOpen && (
+                  <div className="weather-city-dropdown">
+                    <div className="weather-city-dropdown-label">Select a region</div>
+                    {weatherData.map((w, idx) => {
+                      const cityForecast = w.forecasts[selectedDayIndex] || w.forecasts[1];
+                      const cityCondition = mapWeatherCode(cityForecast.code);
+                      return (
+                        <button
+                          key={idx}
+                          className={`weather-city-option ${idx === selectedCity ? 'active' : ''}`}
+                          onClick={() => { setSelectedCity(idx); setCityListOpen(false); }}
+                        >
+                          <div className="weather-city-option-left">
+                            <span className="weather-city-option-emoji">{cityCondition.emoji}</span>
+                            <div>
+                              <span className="weather-city-option-name">{w.location}</span>
+                              <span className="weather-city-option-region">{w.region}</span>
+                            </div>
+                          </div>
+                          <span className="weather-city-option-temp">{cityForecast.maxTemp}°</span>
+                        </button>
+                      );
+                    })}
                   </div>
+                )}
+              </div>
 
-                  <div className="weather-details-list">
-                    <div className="weather-detail-item">
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Droplets size={12} /> Rain Probability:</span>
-                      <span className="weather-detail-val">{activeForecast.rainProb}%</span>
-                    </div>
-                  </div>
+              {/* Hero temperature display */}
+              <div className="weather-hero-temp">
+                <span className="weather-hero-emoji">{condition.emoji}</span>
+                <div className="weather-hero-temp-text">
+                  <span className="weather-hero-degrees">{activeForecast.maxTemp}°</span>
+                  <span className="weather-hero-unit">C</span>
+                </div>
+                <div className="weather-hero-meta">
+                  <span className="weather-hero-condition">{condition.label}</span>
+                  <span className="weather-hero-range">Low {activeForecast.minTemp}° · High {activeForecast.maxTemp}°</span>
+                </div>
+              </div>
 
-                  <div className="weather-advisory-box">
-                    <span style={{ color: 'var(--accent-green)' }}>💡</span>
-                    <p style={{ margin: 0 }}>{activeForecast.advisory}</p>
+              {/* Temperature gauge bar */}
+              <div className="weather-temp-gauge">
+                <div className="weather-temp-gauge-labels">
+                  <span>5°C</span>
+                  <Thermometer size={14} />
+                  <span>40°C</span>
+                </div>
+                <div className="weather-temp-gauge-track">
+                  <div
+                    className="weather-temp-gauge-fill"
+                    style={{ width: `${tempPercent}%` }}
+                  ></div>
+                  <div
+                    className="weather-temp-gauge-thumb"
+                    style={{ left: `${tempPercent}%` }}
+                  ></div>
+                </div>
+              </div>
+
+              {/* Detail metrics row */}
+              <div className="weather-metrics-row">
+                <div className="weather-metric-chip">
+                  <Droplets size={16} />
+                  <div>
+                    <span className="weather-metric-val">{activeForecast.rainProb}%</span>
+                    <span className="weather-metric-label">Rain</span>
                   </div>
                 </div>
-              );
-            })}
+                <div className="weather-metric-chip">
+                  <Wind size={16} />
+                  <div>
+                    <span className="weather-metric-val">{Math.round(8 + activeForecast.rainProb * 0.12)} km/h</span>
+                    <span className="weather-metric-label">Wind</span>
+                  </div>
+                </div>
+                <div className="weather-metric-chip">
+                  <Eye size={16} />
+                  <div>
+                    <span className="weather-metric-val">{currentCity.elevation}m</span>
+                    <span className="weather-metric-label">Elevation</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Forecast strip + Advisory */}
+            <div className="weather-premium-right">
+              {/* Day selector tabs */}
+              <div className="weather-day-tabs">
+                {currentCity.forecasts.map((fc, idx) => {
+                  const fcCondition = mapWeatherCode(fc.code);
+                  return (
+                    <button
+                      key={idx}
+                      className={`weather-day-tab ${idx === selectedDayIndex ? 'active' : ''}`}
+                      onClick={() => setSelectedDayIndex(idx)}
+                    >
+                      <span className="weather-day-tab-label">{fc.dayLabel}</span>
+                      <span className="weather-day-tab-emoji">{fcCondition.emoji}</span>
+                      <span className="weather-day-tab-temp">{fc.maxTemp}°</span>
+                      <span className="weather-day-tab-low">{fc.minTemp}°</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Agricultural Advisory */}
+              <div className="weather-advisory-premium">
+                <div className="weather-advisory-premium-header">
+                  <span className="weather-advisory-premium-badge">🌱 Agricultural Advisory</span>
+                </div>
+                <p className="weather-advisory-premium-text">{activeForecast.advisory}</p>
+              </div>
+
+              {/* Quick city overview */}
+              <div className="weather-cities-quick-grid">
+                {weatherData.filter((_, idx) => idx !== selectedCity).slice(0, 4).map((w, idx) => {
+                  const qForecast = w.forecasts[selectedDayIndex] || w.forecasts[1];
+                  const qCondition = mapWeatherCode(qForecast.code);
+                  return (
+                    <button
+                      key={idx}
+                      className="weather-quick-city"
+                      onClick={() => setSelectedCity(weatherData.indexOf(w))}
+                    >
+                      <span className="weather-quick-emoji">{qCondition.emoji}</span>
+                      <span className="weather-quick-name">{w.location}</span>
+                      <span className="weather-quick-temp">{qForecast.maxTemp}°</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
-        )}
+        ) : null}
       </section>
 
       {/* PROJECT SUMMARY / STATISTICS */}
@@ -366,15 +475,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     alignItems: 'center',
     gap: '1.5rem'
   },
-  badgeLabel: {
-    background: 'rgba(103, 194, 58, 0.1)',
-    border: '1px solid rgba(103, 194, 58, 0.2)',
-    color: 'var(--accent-green)',
-    padding: '0.4rem 1rem',
-    borderRadius: '50px',
-    fontSize: '0.85rem',
-    fontWeight: 600
-  },
   heroTitle: {
     fontFamily: "'Outfit', sans-serif",
     fontSize: '3.25rem',
@@ -412,20 +512,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     alignItems: 'center',
     gap: '0.5rem',
     boxShadow: '0 4px 15px rgba(103, 194, 58, 0.3)'
-  },
-  secondaryCta: {
-    background: 'rgba(255,255,255,0.02)',
-    border: '1px solid rgba(255,255,255,0.1)',
-    color: '#fff',
-    padding: '0.85rem 1.75rem',
-    borderRadius: '10px',
-    fontWeight: 600,
-    fontSize: '1rem',
-    textDecoration: 'none',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    transition: 'all 0.3s ease'
   },
   featuresSection: {
     display: 'grid',

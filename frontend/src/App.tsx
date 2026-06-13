@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Sparkles, Activity, Upload, Play, Pause, Volume2 } from 'lucide-react';
 import Home from './components/Home';
+import AgroTools from './components/AgroTools';
 import { Metric } from './types';
 
 const TOOLS = [
@@ -213,6 +214,36 @@ export default function App() {
   const [results, setResults] = useState<Metric | null>(null);
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
 
+  const [historyLogs, setHistoryLogs] = useState<any[]>([
+    {
+      id: 'SSD-2026-802',
+      timestamp: '2026-06-12 14:32:05',
+      toolName: 'Maize Vigor YOLOv8',
+      class: 'Vigor 3 (High Germination)',
+      confidence: '97.4%',
+      mode: 'Cloud Engine (Online)',
+      status: 'Success'
+    },
+    {
+      id: 'SSD-2026-791',
+      timestamp: '2026-06-12 11:15:42',
+      toolName: 'Seed Surface ResNet',
+      class: 'Mechanical Damage (Cracked)',
+      confidence: '87.2%',
+      mode: 'Edge TFLite (Offline)',
+      status: 'Success'
+    },
+    {
+      id: 'SSD-2026-785',
+      timestamp: '2026-06-11 09:04:18',
+      toolName: 'Soil Bioacoustic Monitor',
+      class: 'High Biotic Activity (Healthy Soil)',
+      confidence: '94.2%',
+      mode: 'Cloud Engine (Online)',
+      status: 'Success'
+    }
+  ]);
+
   const handleToolChange = (toolId: string) => {
     setActiveToolId(toolId);
     const presets = TOOL_SAMPLES[toolId];
@@ -227,7 +258,19 @@ export default function App() {
     setTimeout(() => {
       setLoading(false);
       const sample = SAMPLES[selectedSample];
-      setResults(isOnline ? sample.online : sample.offline);
+      const selectedResult = isOnline ? sample.online : sample.offline;
+      setResults(selectedResult);
+      
+      const newLog = {
+        id: `SSD-2026-${Math.floor(100 + Math.random() * 900)}`,
+        timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
+        toolName: activeTool.name,
+        class: selectedResult.class,
+        confidence: selectedResult.confidence,
+        mode: isOnline ? 'Cloud Engine (Online)' : 'Edge TFLite (Offline)',
+        status: 'Success'
+      };
+      setHistoryLogs(prev => [newLog, ...prev]);
     }, 700);
   };
 
@@ -259,6 +302,12 @@ export default function App() {
           >
             Diagnostic Workspace
           </button>
+          <button 
+            onClick={() => setCurrentTab('agrotools')}
+            className={`nav-link ${currentTab === 'agrotools' ? 'active' : ''}`}
+          >
+            Agro-Calculator & Logs
+          </button>
         </nav>
         <div className={`status-badge ${isOnline ? 'online' : 'offline'}`}>
           {isOnline ? 'Cloud Engine Online' : 'Edge TFLite Active'}
@@ -266,9 +315,10 @@ export default function App() {
       </header>
 
       {/* Conditionally render Tab Content */}
-      {currentTab === 'home' ? (
+      {currentTab === 'home' && (
         <Home onEnterWorkspace={() => setCurrentTab('workspace')} />
-      ) : (
+      )}
+      {currentTab === 'workspace' && (
         /* WORKSPACE INTERACTIVE DIAGNOSTIC SCREEN */
         <main className="workspace-layout">
           
@@ -535,6 +585,12 @@ export default function App() {
 
           </div>
         </main>
+      )}
+      {currentTab === 'agrotools' && (
+        <AgroTools 
+          historyLogs={historyLogs} 
+          onClearHistory={() => setHistoryLogs([])} 
+        />
       )}
     </div>
   );
