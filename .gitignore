@@ -18,6 +18,23 @@ env/
 *.sln
 *.swp
 
+# Root-level scrap files and diagrams
+*.png
+*.html
+/clean_md.py
+/clean_quotes.py
+/fix_tables.py
+/generate_diagrams.py
+/generate_docx.py
+/view_history.py
+/mobile_app.js
+/Wicrypt_Essay.md
+/SeedSec_Rwanda_Proposal*
+/old_chat_*
+/seed_vigor_training_yolov8(1).ipynb
+/seed_vigor_training_yolov8.ipynb
+/vegetable_seed_training_mobilenetv223(1).ipynb
+
 # Python Caches
 __pycache__/
 *.pyc
