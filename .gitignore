@@ -1,0 +1,65 @@
+# macOS System Files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# Python Caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Mobile Builds & Caches
+seedsec_mobile/.dart_tool/
+seedsec_mobile/.flutter-plugins
+seedsec_mobile/.flutter-plugins-dependencies
+seedsec_mobile/.packages
+seedsec_mobile/build/
+seedsec_mobile/ios/Flutter/Generated.xcconfig
+seedsec_mobile/ios/Flutter/flutter_export_environment.sh
+seedsec_mobile/ios/Pods/
+
+# Web Builds & Caches
+seedsec_web/frontend/node_modules/
+seedsec_web/frontend/dist/
+seedsec_web/frontend/.eslintcache
+
+# Large model weights (keep code weights in cloud/releases)
+*.pt
+*.onnx
+*.tflite
+
+# Training runs, datasets, and logs
+runs/
+weights/
+data/
+scratch/
+*.log
+*.pth
+*.whl
+
+# Project planning documents, PDF, DOCX, CSV, XLSX, ZIP
+*.pdf
+*.docx
+*.xlsx
+*.csv
+*.zip
+temp.html
+cupsfilter.log

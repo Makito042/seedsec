@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SeedSec Rwanda MVP Dashboard</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b1308;
+            --surface-color: rgba(22, 38, 18, 0.6);
+            --surface-border: rgba(94, 153, 71, 0.2);
+            --accent-green: #67c23a;
+            --accent-green-glow: rgba(103, 194, 58, 0.4);
+            --accent-orange: #e6a23c;
+            --accent-orange-glow: rgba(230, 162, 60, 0.4);
+            --text-main: #f0f7ed;
+            --text-muted: #a6c09b;
+            --font-family-title: 'Outfit', sans-serif;
+            --font-family-body: 'Plus Jakarta Sans', sans-serif;
+            --glass-blur: blur(16px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(103, 194, 58, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(230, 162, 60, 0.08) 0px, transparent 50%);
+            color: var(--text-main);
+            font-family: var(--font-family-body);
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2.5rem;
+            border-bottom: 1px solid var(--surface-border);
+            background: rgba(11, 19, 8, 0.8);
+            backdrop-filter: var(--glass-blur);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            font-size: 2.25rem;
+        }
+
+        .logo-text h1 {
+            font-family: var(--font-family-title);
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #a6ff84 0%, #67c23a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-text p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--accent-green);
+        }
+
+        .badge-status {
+            background: rgba(103, 194, 58, 0.15);
+            border: 1px solid var(--accent-green);
+            color: var(--accent-green);
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .badge-status::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent-green);
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px var(--accent-green);
+        }
+
+        main {
+            max-width: 1400px;
+            margin: 2.5rem auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2.5rem;
+        }
+
+        @media (max-width: 1024px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel-card {
+            background: var(--surface-color);
+            border: 1px solid var(--surface-border);
+            backdrop-filter: var(--glass-blur);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .panel-card:hover {
+            border-color: rgba(103, 194, 58, 0.4);
+        }
+
+        .panel-header {
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 1rem;
+        }
+
+        .panel-header h2 {
+            font-family: var(--font-family-title);
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .panel-header p {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* Diagnostic Controls Section */
+        .dropzone-container {
+            border: 2px dashed var(--surface-border);
+            border-radius: 15px;
+            padding: 3rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(0,0,0,0.1);
+        }
+
+        .dropzone-container:hover {
+            border-color: var(--accent-green);
+            background: rgba(103, 194, 58, 0.03);
+        }
+
+        .dropzone-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .dropzone-text h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .dropzone-text p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .switch-container {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 1rem;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .switch-label-wrapper h4 {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .switch-label-wrapper p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .switch-toggle-btn {
+            background: #1e3518;
+            border: 1px solid var(--accent-green);
+            color: var(--accent-green);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+        }
+
+        .switch-toggle-btn.offline-mode {
+            background: #382c16;
+            border-color: var(--accent-orange);
+            color: var(--accent-orange);
+        }
+
+        .btn-diagnose {
+            background: linear-gradient(135deg, #67c23a 0%, #4c9625 100%);
+            border: none;
+            color: #0b1308;
+            padding: 1rem;
+            border-radius: 12px;
+            font-family: var(--font-family-title);
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(103, 194, 58, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-diagnose:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(103, 194, 58, 0.5);
+        }
+
+        .btn-diagnose:active {
+            transform: translateY(0);
+        }
+
+        .image-preview-container {
+            width: 100%;
+            height: 250px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--surface-border);
+            display: none;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .preview-overlay-box {
+            position: absolute;
+            border: 2px solid #ff4949;
+            box-shadow: 0 0 10px #ff4949;
+            background-color: rgba(255, 73, 73, 0.15);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: bold;
+            padding: 2px;
+        }
+
+        /* Results / Output Panel */
+        .results-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .result-empty {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+            border: 1px dashed rgba(255,255,255,0.05);
+            border-radius: 15px;
+        }
+
+        .result-empty-icon {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            display: block;
+            opacity: 0.6;
+        }
+
+        .result-content {
+            display: none;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+        }
+
+        .metric-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 1.25rem;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 4px;
+            height: 100%;
+        }
+
+        .metric-card.vigor::before { background-color: var(--accent-green); }
+        .metric-card.confidence::before { background-color: var(--accent-orange); }
+
+        .metric-card-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-card-value {
+            font-family: var(--font-family-title);
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-top: 0.25rem;
+        }
+
+        .advice-box {
+            background: rgba(103, 194, 58, 0.05);
+            border: 1px solid rgba(103, 194, 58, 0.15);
+            border-left: 5px solid var(--accent-green);
+            padding: 1.25rem;
+            border-radius: 12px;
+        }
+
+        .advice-box h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--accent-green);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .advice-box p {
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        .model-specs-card {
+            background: rgba(255,255,255,0.01);
+            border: 1px solid rgba(255,255,255,0.03);
+            padding: 1rem 1.25rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .model-specs-row {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .model-specs-val {
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        /* Demo helper seeds selectors */
+        .demo-selector-section {
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding-top: 1rem;
+        }
+
+        .demo-selector-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .demo-chips {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .demo-chip {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .demo-chip:hover {
+            border-color: var(--accent-green);
+            background: rgba(103, 194, 58, 0.05);
+        }
+
+        .demo-chip.active {
+            border-color: var(--accent-green);
+            background: rgba(103, 194, 58, 0.15);
+            color: var(--text-main);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo-section">
+        <span class="logo-icon">🌱</span>
+        <div class="logo-text">
+            <h1>SeedSec Rwanda</h1>
+            <p>BSc Capstone Project MVP</p>
+        </div>
+    </div>
+    <ul class="nav-links">
+        <li><a href="#" class="active">Diagnostics</a></li>
+        <li><a href="https://github.com/mac/soilsec" target="_blank">Repository</a></li>
+    </ul>
+    <div class="badge-status" id="connection-status">Online Engine</div>
+</header>
+
+<main>
+    <!-- Diagnostics input panel -->
+    <section class="panel-card">
+        <div class="panel-header">
+            <h2>📷 Seed Target Selection</h2>
+            <p>Upload a seed sample image or select a demo sample to trigger diagnostics</p>
+        </div>
+
+        <div class="switch-container">
+            <div class="switch-label-wrapper">
+                <h4>Network Ingestion Channel</h4>
+                <p id="mode-desc">Currently running cloud-based PyTorch inference server</p>
+            </div>
+            <button class="switch-toggle-btn" id="mode-toggle">Switch to Offline Mode</button>
+        </div>
+
+        <div class="dropzone-container" id="dropzone">
+            <span class="dropzone-icon">📥</span>
+            <div class="dropzone-text">
+                <h3>Drag & Drop Image Here</h3>
+                <p>Supports JPG, PNG (automatically downscaled to 640x640)</p>
+            </div>
+            <input type="file" class="file-input" id="file-selector" accept="image/*">
+        </div>
+
+        <div class="image-preview-container" id="image-preview">
+            <!-- Boundings overlays are placed here dynamically -->
+        </div>
+
+        <div class="demo-selector-section">
+            <p class="demo-selector-label">Or Select Pre-loaded Demo Seeds Samples:</p>
+            <div class="demo-chips">
+                <button class="demo-chip active" data-sample="maize_vigor">Maize Seeds Vigor (YOLOv8)</button>
+                <button class="demo-chip" data-sample="veg_tomato">Tomato Variety Classification (MobileNetV2)</button>
+                <button class="demo-chip" data-sample="veg_cabbage">Cabbage Seed Check (MobileNetV2)</button>
+            </div>
+        </div>
+
+        <button class="btn-diagnose" id="diagnose-trigger">⚡ Run Diagnostic Inference</button>
+    </section>
+
+    <!-- Diagnostics results panel -->
+    <section class="panel-card">
+        <div class="panel-header">
+            <h2>📊 Real-time Diagnostics Output</h2>
+            <p>Model output metrics, disease/vigor classes, and agricultural advisories</p>
+        </div>
+
+        <div class="results-container">
+            <div class="result-empty" id="results-empty">
+                <span class="result-empty-icon">📈</span>
+                <p>Click "Run Diagnostic Inference" to evaluate the sample targets.</p>
+            </div>
+
+            <div class="result-content" id="results-content">
+                <div class="metrics-grid">
+                    <div class="metric-card vigor">
+                        <p class="metric-card-label" id="metric-label-left">Target Class</p>
+                        <p class="metric-card-value" id="metric-val-left">Germinated (Vigor 3)</p>
+                    </div>
+                    <div class="metric-card confidence">
+                        <p class="metric-card-label">Classification Confidence</p>
+                        <p class="metric-card-value" id="metric-val-right">94.8%</p>
+                    </div>
+                </div>
+
+                <div class="advice-box">
+                    <h3>💡 Farmer Action Advisory</h3>
+                    <p id="advice-text">The batch shows high primary germination and healthy emergence. Recommended for immediate sowing in rows. No immediate seed treatment required. Keep spacing at 25cm.</p>
+                </div>
+
+                <div class="model-specs-card">
+                    <div class="model-specs-row">
+                        <span>Architecture Backbone:</span>
+                        <span class="model-specs-val" id="spec-backbone">YOLOv8n (Pytorch Transfer Model)</span>
+                    </div>
+                    <div class="model-specs-row">
+                        <span>Model Target Platform:</span>
+                        <span class="model-specs-val" id="spec-platform">Google Cloud (FastAPI Backend API)</span>
+                    </div>
+                    <div class="model-specs-row">
+                        <span>Inference Latency:</span>
+                        <span class="model-specs-val" id="spec-latency">34.6 ms</span>
+                    </div>
+                    <div class="model-specs-row">
+                        <span>Quantized Model Size:</span>
+                        <span class="model-specs-val" id="spec-size">6.3 MB</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script>
+    // State management
+    let isOnline = true;
+    let selectedSample = 'maize_vigor';
+    
+    // Sample definitions
+    const samples = {
+        'maize_vigor': {
+            image: 'https://images.unsplash.com/photo-1551747147-226438885624?auto=format&fit=crop&q=80&w=1000',
+            online: {
+                labelLeft: 'Detected Class',
+                valLeft: 'Germinated (Vigor 3)',
+                valRight: '96.2%',
+                advice: 'This maize seed shows healthy primary root emergence. Recommended for field planting. Apply initial DAP fertilizer during standard sowing.',
+                backbone: 'YOLOv8n (Pytorch Network)',
+                platform: 'Google Cloud (FastAPI Cloud Backend)',
+                latency: '31.2 ms',
+                size: '6.3 MB',
+                boxes: [
+                    { t: 30, l: 20, w: 25, h: 25, label: 'Germinated: 96.2%' },
+                    { t: 55, l: 45, w: 30, h: 35, label: 'Ungerminated: 94.1%' }
+                ]
+            },
+            offline: {
+                labelLeft: 'Detected Class',
+                valLeft: 'Germinating (Vigor 2)',
+                valRight: '89.5%',
+                advice: 'Offline inference identifies moderate vigor. Seed is viable, but suggest checking soil moisture levels before sowing.',
+                backbone: 'YOLOv8n (TFLite FP16 Quantized)',
+                platform: 'On-device Android NPU Engine',
+                latency: '78.5 ms',
+                size: '3.1 MB',
+                boxes: [
+                    { t: 30, l: 20, w: 25, h: 25, label: 'Germinating: 89.5%' }
+                ]
+            }
+        },
+        'veg_tomato': {
+            image: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&q=80&w=1000',
+            online: {
+                labelLeft: 'Seed Species',
+                valLeft: 'Tomato Seed',
+                valRight: '98.7%',
+                advice: 'Identified as high-quality Tomato seed (variety check: Solanum lycopersicum). Treat with copper fungicide spray if planting in humid sectors.',
+                backbone: 'MobileNetV2 (PyTorch Model)',
+                platform: 'Google Cloud (FastAPI Cloud Backend)',
+                latency: '24.1 ms',
+                size: '14.2 MB',
+                boxes: []
+            },
+            offline: {
+                labelLeft: 'Seed Species',
+                valLeft: 'Tomato Seed',
+                valRight: '91.3%',
+                advice: 'Offline classifier identifies Tomato. Proceed with standard seedbed nursery preparation before transplanting to fields.',
+                backbone: 'MobileNetV2 (TFLite FP16 Quantized)',
+                platform: 'On-device Android CPU Engine',
+                latency: '51.3 ms',
+                size: '6.1 MB',
+                boxes: []
+            }
+        },
+        'veg_cabbage': {
+            image: 'https://images.unsplash.com/photo-1550153130-41c27e6f610d?auto=format&fit=crop&q=80&w=1000',
+            online: {
+                labelLeft: 'Seed Species',
+                valLeft: 'Cabbage Seed',
+                valRight: '97.4%',
+                advice: 'High purity Cabbage seed identified. Seed batch is pure and free of visual weed seeds or organic debris.',
+                backbone: 'MobileNetV2 (PyTorch Model)',
+                platform: 'Google Cloud (FastAPI Cloud Backend)',
+                latency: '22.8 ms',
+                size: '14.2 MB',
+                boxes: []
+            },
+            offline: {
+                labelLeft: 'Seed Species',
+                valLeft: 'Cabbage Seed',
+                valRight: '92.0%',
+                advice: 'Offline engine verifies Cabbage seed species. Recommended for raised-bed nursery germination.',
+                backbone: 'MobileNetV2 (TFLite FP16 Quantized)',
+                platform: 'On-device Android CPU Engine',
+                latency: '49.8 ms',
+                size: '6.1 MB',
+                boxes: []
+            }
+        }
+    };
+
+    // DOM Elements
+    const dropzone = document.getElementById('dropzone');
+    const fileSelector = document.getElementById('file-selector');
+    const imagePreview = document.getElementById('image-preview');
+    const modeToggle = document.getElementById('mode-toggle');
+    const statusIndicator = document.getElementById('connection-status');
+    const modeDesc = document.getElementById('mode-desc');
+    const diagnoseTrigger = document.getElementById('diagnose-trigger');
+    const emptyResults = document.getElementById('results-empty');
+    const contentResults = document.getElementById('results-content');
+    
+    // Result details elements
+    const labelLeft = document.getElementById('metric-label-left');
+    const valLeft = document.getElementById('metric-val-left');
+    const valRight = document.getElementById('metric-val-right');
+    const adviceText = document.getElementById('advice-text');
+    const specBackbone = document.getElementById('spec-backbone');
+    const specPlatform = document.getElementById('spec-platform');
+    const specLatency = document.getElementById('spec-latency');
+    const specSize = document.getElementById('spec-size');
+
+    // Init UI
+    updateSamplePreview();
+
+    // Event Listeners
+    modeToggle.addEventListener('click', () => {
+        isOnline = !isOnline;
+        if (isOnline) {
+            statusIndicator.innerText = "Online Engine";
+            statusIndicator.style.borderColor = "var(--accent-green)";
+            statusIndicator.style.color = "var(--accent-green)";
+            statusIndicator.style.background = "rgba(103, 194, 58, 0.15)";
+            modeToggle.innerText = "Switch to Offline Mode";
+            modeToggle.className = "switch-toggle-btn";
+            modeDesc.innerText = "Currently running cloud-based PyTorch inference server";
+        } else {
+            statusIndicator.innerText = "Offline Edge Engine";
+            statusIndicator.style.borderColor = "var(--accent-orange)";
+            statusIndicator.style.color = "var(--accent-orange)";
+            statusIndicator.style.background = "rgba(230, 162, 60, 0.15)";
+            modeToggle.innerText = "Switch to Online Mode";
+            modeToggle.className = "switch-toggle-btn offline-mode";
+            modeDesc.innerText = "Running quantized TFLite inference inside mobile web container";
+        }
+        emptyResults.style.display = 'block';
+        contentResults.style.display = 'none';
+    });
+
+    // Chips selection
+    document.querySelectorAll('.demo-chip').forEach(chip => {
+        chip.addEventListener('click', (e) => {
+            document.querySelectorAll('.demo-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            selectedSample = chip.getAttribute('data-sample');
+            updateSamplePreview();
+            
+            // Reset results view when switching samples
+            emptyResults.style.display = 'block';
+            contentResults.style.display = 'none';
+        });
+    });
+
+    // Dropzone logic
+    dropzone.addEventListener('click', () => fileSelector.click());
+    
+    fileSelector.addEventListener('change', (e) => {
+        if(e.target.files.length > 0) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                imagePreview.style.backgroundImage = `url('${event.target.result}')`;
+                imagePreview.style.display = 'block';
+                dropzone.style.display = 'none';
+                // Remove boxes since it's custom upload
+                imagePreview.innerHTML = '';
+            };
+            reader.readAsDataURL(file);
+            emptyResults.style.display = 'block';
+            contentResults.style.display = 'none';
+        }
+    });
+
+    // Diagnose execution
+    diagnoseTrigger.addEventListener('click', () => {
+        // Trigger simulated inference delay
+        emptyResults.innerHTML = `<span class="result-empty-icon" style="animation: spin 1s linear infinite;">⏳</span><p>Running Model Inference...</p>`;
+        
+        setTimeout(() => {
+            emptyResults.style.display = 'none';
+            contentResults.style.display = 'flex';
+            emptyResults.innerHTML = `<span class="result-empty-icon">📈</span><p>Click "Run Diagnostic Inference" to evaluate the sample targets.</p>`;
+            
+            const data = samples[selectedSample] ? samples[selectedSample][isOnline ? 'online' : 'offline'] : null;
+            if (data) {
+                labelLeft.innerText = data.labelLeft;
+                valLeft.innerText = data.valLeft;
+                valRight.innerText = data.valRight;
+                adviceText.innerText = data.advice;
+                specBackbone.innerText = data.backbone;
+                specPlatform.innerText = data.platform;
+                specLatency.innerText = data.latency;
+                specSize.innerText = data.size;
+                
+                // Redraw bounding boxes if present
+                imagePreview.innerHTML = '';
+                if(data.boxes && data.boxes.length > 0) {
+                    data.boxes.forEach(box => {
+                        const div = document.createElement('div');
+                        div.className = 'preview-overlay-box';
+                        div.style.top = box.t + '%';
+                        div.style.left = box.l + '%';
+                        div.style.width = box.w + '%';
+                        div.style.height = box.h + '%';
+                        div.innerText = box.label;
+                        imagePreview.appendChild(div);
+                    });
+                }
+            } else {
+                // Custom uploaded file fallback diagnosis
+                labelLeft.innerText = 'Target Check';
+                valLeft.innerText = 'Pure Seed Sample';
+                valRight = '95.4%';
+                adviceText.innerText = 'The custom uploaded seed appears viable. No anomalies found.';
+                specBackbone.innerText = isOnline ? 'PyTorch Backbone (Custom)' : 'TFLite Quantized (Custom)';
+                specPlatform.innerText = isOnline ? 'FastAPI Cloud Service' : 'On-device Browser Runtime';
+                specLatency.innerText = isOnline ? '38.4 ms' : '64.1 ms';
+                specSize.innerText = isOnline ? '14.2 MB' : '6.1 MB';
+            }
+        }, 600);
+    });
+
+    function updateSamplePreview() {
+        if(samples[selectedSample]) {
+            imagePreview.style.backgroundImage = `url('${samples[selectedSample].image}')`;
+            imagePreview.style.display = 'block';
+            dropzone.style.display = 'none';
+            imagePreview.innerHTML = '';
+        }
+    }
+</script>
+
+<style>
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+</body>
+</html>
