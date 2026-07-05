@@ -1,8 +1,13 @@
 # SeedSec Rwanda: Hybrid Online/Offline Seed Quality Diagnosis and Advisory System
 ALU BSc in Software Engineering Capstone Project submission workspace.
 
+## Demo Video
+🎥 Watch the SeedSec demonstration video showing both the Web App and Mobile App:
+
+[![SeedSec Project Demo Video](https://img.youtube.com/vi/AvhVfsejh8U/maxresdefault.jpg)](https://youtu.be/AvhVfsejh8U)
+
 ## Repository Information
-- **GitHub Repository URL**: [https://github.com/mac/soilsec](https://github.com/mac/soilsec)
+- **GitHub Repository URL**: [https://github.com/Makito042/seedsec](https://github.com/Makito042/seedsec)
 - **Submission Track**: Machine Learning (ML) Track
 - **Project Scope**: A hybrid deep learning diagnostic system combining:
   1. A cloud-hosted **FastAPI** backend executing **PyTorch** models for complex diagnostics (YOLOv8 object detection for maize vigor, MobileNetV2 classification for vegetable species, ResNet50 for seed defects).
@@ -20,8 +25,8 @@ ALU BSc in Software Engineering Capstone Project submission workspace.
 ### Local Environment Setup
 1. Clone the repository:
    ```bash
-   git clone https://github.com/mac/soilsec.git
-   cd soilsec
+   git clone https://github.com/Makito042/seedsec.git
+   cd seedsec
    ```
 2. Initialize virtual environment and install requirements:
    ```bash
