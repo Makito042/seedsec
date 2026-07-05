@@ -70,9 +70,9 @@ VEGETABLE_ADVISORIES = {
 }
 
 # Absolute paths to weights files
-VIGOR_MODEL_PATH = "/Users/mac/soilsec/runs/seed_vigor_detection-3/weights/best.pt"
-CORN_MODEL_PATH = "/Users/mac/soilsec/scratch/best_mobilenet_corn.pth"
-VEG_MODEL_PATH = "/Users/mac/soilsec/weights/best_mobilenetv2_vegetables.pth"
+VIGOR_MODEL_PATH = "/Users/mac/soilsec/weights/best_vigor_yolov8.pt"
+CORN_MODEL_PATH = "/Users/mac/soilsec/weights/best_mobilenet_corn.pth"
+VEG_MODEL_PATH = "/Users/mac/soilsec/weights/best_vegetable_mobilenet.pth"
 
 # Load Maize Vigor YOLOv8 model
 model_vigor = None

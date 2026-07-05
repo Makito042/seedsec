@@ -10,7 +10,7 @@ class ApiService {
       return 'http://10.0.2.2:8000';
     } else {
       // Connect to the Mac's local IP address so both physical device and simulator can reach the host
-      return 'http://192.168.1.66:8000';
+      return 'http://192.168.1.72:8000';
     }
   }
 

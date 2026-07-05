@@ -61,16 +61,19 @@ seedsec_web/frontend/.eslintcache
 # Large model weights (keep code weights in cloud/releases)
 *.pt
 *.onnx
+*.onnx.data
 *.tflite
+!weights/best_vigor_yolov8.pt
 
 # Training runs, datasets, and logs
 runs/
-weights/
 data/
 scratch/
 *.log
 *.pth
 *.whl
+!weights/best_mobilenet_corn.pth
+!weights/best_vegetable_mobilenet.pth
 
 # Project planning documents, PDF, DOCX, CSV, XLSX, ZIP
 *.pdf
