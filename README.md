@@ -64,6 +64,15 @@ We provide two pre-configured, Colab-ready Jupyter notebooks in the repository r
 
 ---
 
+## Machine Learning Datasets
+
+The machine learning models used in this project were trained on the following public Kaggle datasets:
+1. **Maize Seed Vigor Object Detection Dataset**: [sardarsameer/seed-vigor-detection-rgb-image](https://www.kaggle.com/datasets/sardarsameer/seed-vigor-detection-rgb-image) (YOLOv8 vigor detection).
+2. **Vegetable Seed Image Classification Dataset**: [imr4n4lif/vegetable-seed-dataset](https://www.kaggle.com/datasets/imr4n4lif/vegetable-seed-dataset) (14-class vegetable classification).
+3. **Corn Seed Purity Image Dataset**: [linxvandu/corn-seed-image-classification](https://www.kaggle.com/datasets/linxvandu/corn-seed-image-classification) (Corn seed defects and purity classification).
+
+---
+
 ## Interface Mockups & Designs
 All UML files and wireframe assets are included in the repository root directory:
 * **Research Design & Data Pipeline**: [research_design.png](file:///Users/mac/soilsec/research_design.png)
