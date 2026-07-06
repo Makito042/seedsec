@@ -6,12 +6,7 @@ import 'package:seedsec_mobile/models/diagnostic_result.dart';
 class ApiService {
   // Use localhost for iOS simulator/desktop, 10.0.2.2 for Android emulator
   static String get baseUrl {
-    if (Platform.isAndroid) {
-      return 'http://10.0.2.2:8000';
-    } else {
-      // Connect to the Mac's local IP address so both physical device and simulator can reach the host
-      return 'http://192.168.1.72:8000';
-    }
+    return 'https://xcottsnow-seedsec.hf.space';
   }
 
   Future<DiagnosticResult> diagnose({

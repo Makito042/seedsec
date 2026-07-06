@@ -69,10 +69,22 @@ VEGETABLE_ADVISORIES = {
     "Water spinach": "Water spinach seed variety confirmed. Thrives in semi-aquatic or highly moist soils. Ensure high nitrogen fertilization for leaf growth."
 }
 
-# Absolute paths to weights files
-VIGOR_MODEL_PATH = "/Users/mac/soilsec/weights/best_vigor_yolov8.pt"
-CORN_MODEL_PATH = "/Users/mac/soilsec/weights/best_mobilenet_corn.pth"
-VEG_MODEL_PATH = "/Users/mac/soilsec/weights/best_vegetable_mobilenet.pth"
+# Absolute paths to weights files (dynamically resolved)
+current_dir = os.path.dirname(os.path.abspath(__file__))
+weights_dir = None
+for _ in range(4):
+    temp_path = os.path.join(current_dir, "weights")
+    if os.path.exists(temp_path):
+        weights_dir = temp_path
+        break
+    current_dir = os.path.dirname(current_dir)
+
+if not weights_dir:
+    weights_dir = "/Users/mac/soilsec/weights"
+
+VIGOR_MODEL_PATH = os.path.join(weights_dir, "best_vigor_yolov8.pt")
+CORN_MODEL_PATH = os.path.join(weights_dir, "best_mobilenet_corn.pth")
+VEG_MODEL_PATH = os.path.join(weights_dir, "best_vegetable_mobilenet.pth")
 
 # Load Maize Vigor YOLOv8 model
 model_vigor = None
@@ -280,8 +292,40 @@ async def diagnose_variety(
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
+# Serve static frontend files in production (such as on Hugging Face Spaces)
+frontend_dist_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "dist")
+if os.path.exists(frontend_dist_path):
+    from fastapi.staticfiles import StaticFiles
+    from fastapi.responses import FileResponse
+    from fastapi import HTTPException
+    
+    # Mount build assets
+    assets_dir = os.path.join(frontend_dist_path, "assets")
+    if os.path.exists(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="static")
+        
+    images_dir = os.path.join(frontend_dist_path, "images")
+    if os.path.exists(images_dir):
+        app.mount("/images", StaticFiles(directory=images_dir), name="images")
+
+    @app.get("/{fallback_path:path}")
+    async def serve_frontend(fallback_path: str):
+        if fallback_path.startswith("api/"):
+            raise HTTPException(status_code=404, detail="API route not found")
+        index_file = os.path.join(frontend_dist_path, "index.html")
+        if os.path.exists(index_file):
+            return FileResponse(index_file)
+        return {"message": "Welcome to SeedSec API Backend. Frontend build not found."}
+else:
+    @app.get("/")
+    async def root():
+        return {"message": "Welcome to SeedSec API Backend. Frontend build not found."}
+
 if __name__ == "__main__":
     import uvicorn
-    # Start ASGI server on port 8000
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    import os
+    # Read port from env variable (default to 8000 for local development)
+    port = int(os.environ.get("PORT", 8000))
+    # Start ASGI server
+    uvicorn.run(app, host="0.0.0.0", port=port)
 

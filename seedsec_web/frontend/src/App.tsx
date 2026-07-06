@@ -264,63 +264,7 @@ export default function App() {
     } catch (e) {
       console.warn('Failed to load scan history from localStorage:', e);
     }
-    // Default seed entries for first-time users
-    return [
-      {
-        id: 'SSD-2026-802',
-        timestamp: '2026-06-12 14:32:05',
-        toolName: 'Maize Vigor YOLOv8',
-        class: 'Vigor 3 (High Germination)',
-        confidence: '97.4%',
-        mode: 'Cloud Engine (Online)',
-        status: 'Success'
-      },
-      {
-        id: 'SSD-2026-791',
-        timestamp: '2026-06-12 11:15:42',
-        toolName: 'Maize Seed Defect MobileNet',
-        class: 'PURE',
-        confidence: '99.1%',
-        mode: 'Edge TFLite (Offline)',
-        status: 'Success'
-      },
-      {
-        id: 'SSD-2026-784',
-        timestamp: '2026-06-11 16:08:33',
-        toolName: 'Vegetable Species MobileNet',
-        class: 'Tomato Variety',
-        confidence: '98.7%',
-        mode: 'Cloud Engine (Online)',
-        status: 'Success'
-      },
-      {
-        id: 'SSD-2026-779',
-        timestamp: '2026-06-11 09:45:12',
-        toolName: 'Maize Vigor YOLOv8',
-        class: 'Vigor 1 (Low Germination)',
-        confidence: '93.8%',
-        mode: 'Edge TFLite (Offline)',
-        status: 'Success'
-      },
-      {
-        id: 'SSD-2026-772',
-        timestamp: '2026-06-10 14:22:50',
-        toolName: 'Vegetable Species MobileNet',
-        class: 'Chili Variety',
-        confidence: '96.5%',
-        mode: 'Cloud Engine (Online)',
-        status: 'Success'
-      },
-      {
-        id: 'SSD-2026-768',
-        timestamp: '2026-06-10 10:05:18',
-        toolName: 'Maize Seed Defect MobileNet',
-        class: 'BROKEN',
-        confidence: '95.4%',
-        mode: 'Cloud Engine (Online)',
-        status: 'Success'
-      }
-    ];
+    return [];
   });
 
   // Persist scan history to localStorage on every change
@@ -363,11 +307,14 @@ export default function App() {
         const formData = new FormData();
         formData.append('file', blob, filename);
 
-        let endpoint = 'http://localhost:8000/api/diagnose/vigor';
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const apiBase = isLocal ? 'http://localhost:8000' : window.location.origin;
+
+        let endpoint = `${apiBase}/api/diagnose/vigor`;
         if (activeToolId === 'veg_tomato') {
-          endpoint = 'http://localhost:8000/api/diagnose/variety';
+          endpoint = `${apiBase}/api/diagnose/variety`;
         } else if (activeToolId === 'seed_defect') {
-          endpoint = 'http://localhost:8000/api/diagnose/defect';
+          endpoint = `${apiBase}/api/diagnose/defect`;
         }
 
         const apiRes = await fetch(endpoint, {
