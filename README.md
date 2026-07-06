@@ -6,6 +6,10 @@ ALU BSc in Software Engineering Capstone Project submission workspace.
 
 [![SeedSec Project Demo Video](https://img.youtube.com/vi/AvhVfsejh8U/maxresdefault.jpg)](https://youtu.be/AvhVfsejh8U)
 
+## Deployed Web Application
+🌐 The full-stack web application is live and hosted on Hugging Face Spaces:
+👉 **[SeedSec Live Web App](https://huggingface.co/spaces/xcottsnow/seedsec)**
+
 ## Repository Information
 - **GitHub Repository URL**: [https://github.com/Makito042/seedsec](https://github.com/Makito042/seedsec)
 - **Submission Track**: Machine Learning (ML) Track
