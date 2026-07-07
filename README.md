@@ -1,160 +1,103 @@
 # SeedSec Rwanda: Hybrid Online/Offline Seed Quality Diagnosis and Advisory System
-
 ALU BSc in Software Engineering Capstone Project submission workspace.
 
----
+## Demo Video
+🎥 Watch the SeedSec demonstration video showing both the Web App and Mobile App:
 
-## 🎥 Project Demonstration & Live Deployments
-* **Walkthrough Video**: [![SeedSec Project Demo Video](https://img.youtube.com/vi/AvhVfsejh8U/maxresdefault.jpg)](https://youtu.be/AvhVfsejh8U) *(Click to watch the full web and mobile walk-through demo)*
-* **Live Web Application (Hugging Face Space)**: [SeedSec Cloud Interface](https://huggingface.co/spaces/xcottsnow/seedsec)
-* **GitHub Repository**: [https://github.com/Makito042/seedsec](https://github.com/Makito042/seedsec)
+[![SeedSec Project Demo Video](https://img.youtube.com/vi/AvhVfsejh8U/maxresdefault.jpg)](https://youtu.be/AvhVfsejh8U)
 
----
+## Deployed Web Application
+🌐 The full-stack web application is live and hosted on Hugging Face Spaces:
+👉 **[SeedSec Live Web App](https://huggingface.co/spaces/xcottsnow/seedsec)**
 
-## 1. Project Scope & Functional Alignment
-SeedSec is a hybrid deep learning diagnostic system designed to automate seed quality evaluation for smallholder farmers in Rwanda. The system implements three core diagnostic pipelines:
-* **Maize Vigor Assessment**: Object detection model localizing and counting germinated/ungerminated seeds to compute germination rates.
-* **Corn Defect & Purity Analysis**: Classification model identifying pure, broken, discolored, or silk-cut seeds.
-* **Vegetable Species Classification**: Categorization model identifying 14 distinct vegetable species (e.g., Tomato, Chili, Bean) to map planting guidelines.
-
----
-
-## 2. Technical System Architecture & Algorithms
-The system is divided into a **FastAPI backend** executing PyTorch models and a **Flutter mobile client** connecting to the server for remote diagnostics.
-
-```mermaid
-graph TD
-    A[Flutter Mobile Client / Web Frontend] -->|HTTP POST Image| B(FastAPI Gateway Server)
-    B --> C{Diagnostic Router}
-    C -->|YOLOv8| D[Maize Vigor Detection]
-    C -->|MobileNetV2| E[Corn Purity Classification]
-    C -->|MobileNetV2| F[Vegetable Classification]
-    D --> G[Advisory Advice generator]
-    E --> G
-    F --> G
-    G -->|JSON Response + Annotated Image| A
-```
-
-### Machine Learning Specifications
-| Model Task | Algorithm / Backbone | Input Dimensions | Format | Output Classifications |
-| :--- | :--- | :--- | :--- | :--- |
-| **Maize Vigor** | YOLOv8 Nano (`ultralytics`) | 640x640 | `.pt` / `.tflite` | Bounding boxes (Germinated, Ungerminated) |
-| **Corn Purity** | MobileNetV2 / ResNet50 | 224x224 | `.pth` | Pure, Broken, Discolored, Silk Cut |
-| **Vegetables** | MobileNetV2 | 224x224 | `.pth` | 14 species classes |
+## Repository Information
+- **GitHub Repository URL**: [https://github.com/Makito042/seedsec](https://github.com/Makito042/seedsec)
+- **Submission Track**: Machine Learning (ML) Track
+- **Project Scope**: A hybrid deep learning diagnostic system combining:
+  1. A cloud-hosted **FastAPI** backend executing **PyTorch** models for complex diagnostics (YOLOv8 object detection for maize vigor, MobileNetV2 classification for vegetable species, ResNet50 for seed defects).
+  2. A local on-device **TensorFlow Lite (TFLite)** engine embedded in a mobile web client for field operations in rural areas with poor connectivity.
 
 ---
 
-## 3. Repository Directory Structure
-The repository is modularized following strict OOP principles to ensure maintainability:
-```text
-Makito042/seedsec/
-├── README.md                   # Main Capstone Documentation
-├── requirements.txt            # Local Python Dependencies (macOS wheel config)
-├── weights/                    # Active Model weights
-│   ├── best_vigor_yolov8.pt
-│   ├── best_mobilenet_corn.pth
-│   └── best_vegetable_mobilenet.pth
-├── seedsec_web/                # Full-Stack Web Module
-│   ├── backend/
-│   │   └── server.py           # FastAPI REST API & Static Asset Server
-│   └── frontend/
-│       ├── package.json
-│       ├── vite.config.ts
-│       └── src/
-│           ├── App.tsx         # Main React interface & State Router
-│           └── components/
-│               ├── Home.tsx
-│               └── AgroTools.tsx
-└── seedsec_mobile/             # Cross-Platform Flutter Mobile Client
-    ├── pubspec.yaml
-    └── lib/
-        ├── main.dart
-        ├── services/
-        │   └── api_service.dart # Production backend routing
-        └── screens/
-            └── home_screen.dart
-```
+## Workspace Setup
 
----
-
-## 4. Deployment Instructions
+### Prerequisites
+- Python 3.10+
+- Virtual environment tool (`venv`)
+- Kaggle account API token (`kaggle.json` credentials)
 
 ### Local Environment Setup
-1. Clone the repository and navigate to the directory:
+1. Clone the repository:
    ```bash
    git clone https://github.com/Makito042/seedsec.git
    cd seedsec
    ```
-2. Initialize virtual environment:
+2. Initialize virtual environment and install requirements:
    ```bash
    python -m venv .venv
    source .venv/bin/activate
    pip install -r requirements.txt
    ```
-3. Run the backend server locally:
-   ```bash
-   python seedsec_web/backend/server.py
-   ```
-4. Run the frontend React app in development mode:
-   ```bash
-   cd seedsec_web/frontend
-   npm install
-   npm run dev -- --port 3000
-   ```
-
-### Hugging Face Space Cloud Deployment (Docker)
-The application is automatically built and containerized via a multi-stage `Dockerfile`:
-```dockerfile
-# Stage 1: Compile React Frontend
-FROM node:20-alpine AS frontend-builder
-WORKDIR /app/frontend
-COPY frontend/package*.json ./
-RUN npm ci
-COPY frontend/ ./
-RUN npm run build
-
-# Stage 2: Deploy Python REST API & Static Files
-FROM python:3.9-slim
-WORKDIR /app
-RUN apt-get update && apt-get install -y libglib2.0-0 libgl1 && rm -rf /var/lib/apt/lists/*
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
-COPY backend/ ./backend
-COPY weights/ ./weights
-COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
-ENV PORT=7860
-EXPOSE 7860
-CMD ["python", "backend/server.py"]
-```
-*Binary files are uploaded using **Git LFS** to avoid repository bloat and comply with Hugging Face upload regulations.*
-
-### Mobile App compilation (.IPA)
-To compile a release iOS `.ipa` package for wireless distribution platforms (e.g., AppOnAir):
-```bash
-cd seedsec_mobile
-flutter build ipa --export-method development
-```
-The output package `seedsec_mobile.ipa` will be generated at `build/ios/ipa/seedsec_mobile.ipa`.
+3. Export diagrams and documents:
+   - Run `/Users/mac/soilsec/.venv/bin/python generate_diagrams.py` to draw the project architecture, ERD, and sequence flow images.
+   - Run `/Users/mac/soilsec/.venv/bin/python generate_docx.py` to parse and build the formatting-compliant Word Document proposal (`SeedSec_Rwanda_Proposal_Clean_Final.docx`).
 
 ---
 
-## 5. Testing Strategy & Cross-Environment Verification
-Verification was conducted across multiple hardware and software setups to evaluate performance stability.
+## Machine Learning Track Notebooks
 
-### Cross-Environment Test Matrix
-| Environment | Hardware Specs | Software Stack | API Latency (Avg) | Verification Result |
-| :--- | :--- | :--- | :--- | :--- |
-| **Local Host** | Apple M1 Max / 32GB RAM | macOS 14.5, Python 3.10 | ~42ms | Passed (Full model load) |
-| **Cloud Container** | Hugging Face CPU Instance | Linux Debian, Python 3.9-slim | ~120ms | Passed (Zero memory leaks) |
-| **Mobile Device** | iPhone 13 (Jet) | iOS 17.5, Flutter Release | ~150ms | Passed (Success OTA deploy) |
-
-### Test Cases & Bounding Edge Cases
-1. **Normal Inputs**: Clear seed images containing high-vigor crops. Correctly identified vigor bounding boxes (>95% confidence).
-2. **Low-Lighting Conditions**: Images artificially darkened. Models successfully identified targets but with reduced confidence (~70-80%).
-3. **Invalid Files**: Non-image payloads (e.g., PDF or TXT files) uploaded. API successfully rejected with a `400 Bad Request` and warning message.
+We provide two pre-configured, Colab-ready Jupyter notebooks in the repository root directory:
+1. **[Maize Seed Vigor Object Detection Notebook (YOLOv8)](file:///Users/mac/soilsec/seed_vigor_training_yolov8_final.ipynb)**:
+   - Sets up dataset ingestion and mounts Google Drive.
+   - Recursively parses, structures, and converts annotations from standard PASCAL VOC XML into normalized YOLO `.txt` coordinates relative to image sizes.
+   - Handles dynamic class mapping for categories (0: ungerminated, 1: germinated, etc.).
+   - Launches training using transfer learning on the lightweight `yolov8n` backbone.
+   - Generates Precision-Recall logs, harmonic mean F1-Score calculations, confusion matrices, and loss curve plots.
+   - Exports the best PyTorch checkpoint to a quantized **FP16 TensorFlow Lite (`.tflite`)** model.
+2. **[Vegetable Species Classification Notebook (MobileNetV2)](file:///Users/mac/soilsec/vegetable_seed_training_mobilenetv2.ipynb)**:
+   - Programmatically downloads the 14-class Vegetable Seed Dataset from Kaggle.
+   - Splits images into stratified subsets (70% train, 15% validation, 15% test).
+   - Configures PyTorch `ImageFolder` loaders and applies augmentation transforms.
+   - Initiates pre-trained **MobileNetV2** for transfer learning classification across 14 species classes.
+   - Plots training loss/accuracy curves and prints classification F1/precision tables.
+   - Exports the model to `.onnx` and compiles it into a half-precision mobile-ready `.tflite` model.
 
 ---
 
-## 6. Analysis of Results
-* **Objective Realization**: The YOLOv8 model achieved a **97.4% precision** on vigor detection during validation runs. The MobileNetV2 classifier achieved **99.1% classification accuracy** for maize seed defects (Pure vs. Broken).
-* **Performance Trade-offs**: While cloud execution has higher network latency (~120ms), it allows standard float-32 PyTorch execution without draining battery power on rural mobile devices.
+## Machine Learning Datasets
+
+The machine learning models used in this project were trained on the following public Kaggle datasets:
+1. **Maize Seed Vigor Object Detection Dataset**: [sardarsameer/seed-vigor-detection-rgb-image](https://www.kaggle.com/datasets/sardarsameer/seed-vigor-detection-rgb-image) (YOLOv8 vigor detection).
+2. **Vegetable Seed Image Classification Dataset**: [imr4n4lif/vegetable-seed-dataset](https://www.kaggle.com/datasets/imr4n4lif/vegetable-seed-dataset) (14-class vegetable classification).
+3. **Corn Seed Purity Image Dataset**: [linxvandu/corn-seed-image-classification](https://www.kaggle.com/datasets/linxvandu/corn-seed-image-classification) (Corn seed defects and purity classification).
+
+---
+
+## Interface Mockups & Designs
+All UML files and wireframe assets are included in the repository root directory:
+* **Research Design & Data Pipeline**: [research_design.png](file:///Users/mac/soilsec/research_design.png)
+* **System Architecture**: [system_architecture.png](file:///Users/mac/soilsec/system_architecture.png)
+* **UML Use Case Diagram**: [use_case.png](file:///Users/mac/soilsec/use_case.png)
+* **UML Class Diagram**: [class_diagram.png](file:///Users/mac/soilsec/class_diagram.png)
+* **Entity-Relationship Diagram (ERD)**: [erd.png](file:///Users/mac/soilsec/erd.png)
+* **Operational Flow Sequence Diagram**: [sequence_diagram.png](file:///Users/mac/soilsec/sequence_diagram.png)
+
+### MVP Solution Demonstration
+Open the local dashboard [index.html](file:///Users/mac/soilsec/index.html) in your browser. This application showcases:
+- **Interactive Wireframe UI**: Responsive layout featuring image dropzones, mock camera snaps, and dynamic parameter tables.
+- **Engine Switching**: Toggle between *Online Cloud mode* (simulated cloud latency, PyTorch sizes, comprehensive advisories) and *Offline local mode* (quantized TFLite sizes, CPU latency, cached advisories).
+- **Interactive Inference**: Simulates execution latency, maps predicted bounding boxes, displays classification confidences, and returns agricultural advisory actions.
+
+---
+
+## Deployment Plan
+
+1. **Cloud API Services**:
+   - **Infrastructure**: AWS EC2 instance (g4dn.xlarge with T4 GPU) or GCP VM.
+   - **Backend Engine**: FastAPI ASGI server running inside a Docker container.
+   - **Inference Engine**: PyTorch framework loading standard floating-point models (`.pt`).
+   - **Database**: SQLite instance tracking diagnostic transaction logs, class predictions, and accuracy stats.
+2. **Mobile Client Application**:
+   - **Infrastructure**: Progressive Web Application (PWA) container.
+   - **Inference Engine**: TensorFlow Lite Android NPU/CPU runtime using JavaScript and TFLite web assembly bindings.
+   - **Storage**: Offline storage of local scan logs using SQLite / indexedDB, syncing metadata back to cloud storage when internet connection is restored.
